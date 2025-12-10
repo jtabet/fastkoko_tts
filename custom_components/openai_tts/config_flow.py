@@ -10,6 +10,7 @@ import logging
 from urllib.parse import urlparse
 import uuid
 import aiohttp
+import random
 
 from homeassistant import data_entry_flow
 from homeassistant.config_entries import (
@@ -159,26 +160,26 @@ class OpenAITTSConfigFlow(ConfigFlow, domain=DOMAIN):
                 # await validate_user_input(user_input)
 
                 # Check for duplicate API key
-                api_key = user_input.get(CONF_API_KEY)
+                api_key = ""
                 api_url = user_input.get(CONF_URL, "http://kokoro-tts:8880/v1/audio/speech")
 
-                for entry in self._async_current_entries():
-                    if entry.data.get(CONF_API_KEY) == api_key:
-                        _LOGGER.error("An entry with this API key already exists: %s", entry.title)
-                        errors["base"] = "duplicate_api_key"
-                        # Show the form again with the error
-                        return self.async_show_form(
-                            step_id="user",
-                            data_schema=self.data_schema,
-                            errors=errors,
-                        )
+                # for entry in self._async_current_entries():
+                #     if entry.data.get(CONF_API_KEY) == api_key:
+                #         _LOGGER.error("An entry with this API key already exists: %s", entry.title)
+                #         errors["base"] = "duplicate_api_key"
+                #         # Show the form again with the error
+                #         return self.async_show_form(
+                #             step_id="user",
+                #             data_schema=self.data_schema,
+                #             errors=errors,
+                #         )
 
                 # Validate API key by making a test request
-                await async_validate_api_key(api_key, api_url)
+                # await async_validate_api_key(api_key, api_url)
 
                 # Use API key as the unique identifier (hashed for privacy)
                 import hashlib
-                api_key_hash = hashlib.sha256(api_key.encode()).hexdigest()[:16]
+                api_key_hash = hashlib.sha256(random.random()).hexdigest()[:16]
                 unique_id = f"openai_tts_{api_key_hash}"
                 user_input[UNIQUE_ID] = unique_id
                 await self.async_set_unique_id(unique_id)
@@ -262,11 +263,11 @@ class OpenAITTSConfigFlow(ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             try:
-                api_key = user_input.get(CONF_API_KEY)
+                api_key = ""
                 api_url = self._reauth_entry.data.get(CONF_URL, "http://kokoro-tts:8880/v1/audio/speech")
 
                 # Validate the new API key
-                await async_validate_api_key(api_key, api_url)
+                # await async_validate_api_key(api_key, api_url)
 
                 # Update the entry with new credentials
                 self.hass.config_entries.async_update_entry(
@@ -287,7 +288,7 @@ class OpenAITTSConfigFlow(ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="reauth_confirm",
             data_schema=vol.Schema({
-                vol.Required(CONF_API_KEY): str,
+                # vol.Required(CONF_API_KEY): str,
             }),
             errors=errors,
             description_placeholders={
@@ -310,15 +311,15 @@ class OpenAITTSConfigFlow(ConfigFlow, domain=DOMAIN):
         
         if user_input is not None:
             try:
-                await validate_user_input(user_input)
+                # await validate_user_input(user_input)
                 
                 # Check for duplicate API key (exclude current entry)
-                api_key = user_input.get(CONF_API_KEY)
-                for entry in self._async_current_entries():
-                    if entry.entry_id != reconfigure_entry.entry_id and entry.data.get(CONF_API_KEY) == api_key:
-                        _LOGGER.error("An entry with this API key already exists: %s", entry.title)
-                        errors["base"] = "duplicate_api_key"
-                        break
+                api_key = ""
+                # for entry in self._async_current_entries():
+                #     if entry.entry_id != reconfigure_entry.entry_id and entry.data.get(CONF_API_KEY) == api_key:
+                #         _LOGGER.error("An entry with this API key already exists: %s", entry.title)
+                #         errors["base"] = "duplicate_api_key"
+                #         break
                 
                 if not errors:
                     # Update the entry using the recommended helper
@@ -348,7 +349,7 @@ class OpenAITTSConfigFlow(ConfigFlow, domain=DOMAIN):
         # Show the form with current values as defaults
         current_data = reconfigure_entry.data
         schema = vol.Schema({
-            vol.Required(CONF_API_KEY, default=current_data.get(CONF_API_KEY, "")): str,
+            # vol.Required(CONF_API_KEY, default=current_data.get(CONF_API_KEY, "")): str,
             vol.Optional(CONF_URL, default=current_data.get(CONF_URL, "http://kokoro-tts:8880/v1/audio/speech")): str,
         })
         
@@ -613,7 +614,7 @@ class OpenAITTSOptionsFlow(OptionsFlow):
         _LOGGER.debug("OptionsFlow init - is_profile: %s, is_legacy: %s, entry_id: %s", 
                      is_profile, is_legacy, self._config_entry.entry_id)
         _LOGGER.debug("Current options: %s", self._config_entry.options)
-        _LOGGER.debug("Current data: %s", {k: v for k, v in self._config_entry.data.items() if k != CONF_API_KEY})
+        # _LOGGER.debug("Current data: %s", {k: v for k, v in self._config_entry.data.items() if k != CONF_API_KEY})
         
         if user_input is not None:
             # Map string keys to constants
