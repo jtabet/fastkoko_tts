@@ -25,6 +25,7 @@ from homeassistant.helpers import entity_registry as er
 
 from .const import (
     CONF_API_KEY,
+    CONF_DEFAULT_LANGUAGE,
     CONF_MODEL,
     CONF_SPEED,
     CONF_VOICE,
@@ -440,7 +441,7 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
 
     @property
     def default_language(self) -> str:
-        return "en"
+        return CONF_DEFAULT_LANGUAGE or "auto"
 
     @property
     def supported_languages(self) -> list[str]:
@@ -691,6 +692,11 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
             config_instructions = self._get_config_value(CONF_INSTRUCTIONS)
             instructions = service_instructions if service_instructions is not None else config_instructions
 
+            # Handle language
+            service_language = options.get(CONF_DEFAULT_LANGUAGE)
+            config_language = self._get_config_value(CONF_DEFAULT_LANGUAGE)
+            language = service_language if service_language is not None else config_language
+
             # Step 3: Determine if we can use streaming
             can_stream = self._can_use_streaming(full_text, options)
 
@@ -717,7 +723,8 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
                             voice=voice,
                             model=model,
                             speed=speed,
-                            instructions=instructions
+                            instructions=instructions,
+                            language=language
                         ):
                             all_chunks.append(chunk)
                             yield chunk
@@ -836,6 +843,7 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
                 voice=voice,
                 model=model,
                 instructions=instructions,
+                language=language,
                 stream=False  # Don't use streaming for processed audio
             )
         )
@@ -928,6 +936,16 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
         # If service provides instructions, use them; otherwise use config
         instructions = service_instructions if service_instructions is not None else config_instructions
         
+        if language is None:
+            # Handle language - merge service-level with config-level
+            service_language = options.get(CONF_DEFAULT_LANGUAGE)
+            config_language = self._get_config_value(CONF_DEFAULT_LANGUAGE)
+            
+            _LOGGER.debug("Language - service: %s, config: %s", service_language, config_language)
+            
+            # If service provides language, use them; otherwise use config
+            language = service_language if service_language is not None else config_language
+        
         # Audio processing options
         chime_enable = options.get(CONF_CHIME_ENABLE) or self._get_config_value(CONF_CHIME_ENABLE) or False
         chime_sound = options.get(CONF_CHIME_SOUND) or self._get_config_value(CONF_CHIME_SOUND)
@@ -960,7 +978,8 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
                     voice=voice,
                     model=model,  # Pass model parameter
                     instructions=instructions,
-                    stream=can_stream
+                    stream=can_stream,
+                    language=language
                 )
             )
             

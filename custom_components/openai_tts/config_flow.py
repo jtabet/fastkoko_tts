@@ -31,6 +31,8 @@ from .const import (
     CONF_SPEED,
     CONF_URL,
     DOMAIN,
+    CONF_DEFAULT_LANGUAGE,
+    LANGUAGES,
     MODELS,
     VOICES,
     UNIQUE_ID,
@@ -436,20 +438,27 @@ class OpenAITTSProfileSubentryFlow(ConfigSubentryFlow):
         # Schema for profile creation
         profile_schema = vol.Schema({
             vol.Required(CONF_PROFILE_NAME): str,
-            vol.Required(CONF_MODEL, default="tts-1"): selector({
-                "select": {
-                    "options": MODELS,
-                    "mode": "dropdown",
-                    "sort": True,
-                    "custom_value": True,
-                }
-            }),
-            vol.Required(CONF_VOICE, default="shimmer"): selector({
+            # vol.Required(CONF_MODEL, default="tts-1"): selector({
+            #     "select": {
+            #         "options": MODELS,
+            #         "mode": "dropdown",
+            #         "sort": True,
+            #         "custom_value": True,
+            #     }
+            # }),
+            vol.Required(CONF_VOICE, default="af_alloy"): selector({
                 "select": {
                     "options": VOICES,
                     "mode": "dropdown",
                     "sort": True,
                     "custom_value": True,
+                }
+            }),
+            vol.Optional(CONF_DEFAULT_LANGUAGE): selector({
+                "select": {
+                    "options": list(LANGUAGES.keys()),
+                    "mode": "dropdown",
+                    "sort": True
                 }
             }),
             vol.Optional(
@@ -536,20 +545,27 @@ class OpenAITTSProfileSubentryFlow(ConfigSubentryFlow):
         
         # Schema for profile reconfiguration (without profile name)
         reconfigure_schema = vol.Schema({
-            vol.Required(CONF_MODEL, default=existing_data.get(CONF_MODEL, "tts-1")): selector({
-                "select": {
-                    "options": MODELS,
-                    "mode": "dropdown",
-                    "sort": True,
-                    "custom_value": True,
-                }
-            }),
-            vol.Required(CONF_VOICE, default=existing_data.get(CONF_VOICE, "shimmer")): selector({
+            # vol.Required(CONF_MODEL, default=existing_data.get(CONF_MODEL, "tts-1")): selector({
+            #     "select": {
+            #         "options": MODELS,
+            #         "mode": "dropdown",
+            #         "sort": True,
+            #         "custom_value": True,
+            #     }
+            # }),
+            vol.Required(CONF_VOICE, default=existing_data.get(CONF_VOICE, "af_alloy")): selector({
                 "select": {
                     "options": VOICES,
                     "mode": "dropdown",
                     "sort": True,
                     "custom_value": True,
+                }
+            }),
+            vol.Required(CONF_DEFAULT_LANGUAGE, default=existing_data.get(CONF_DEFAULT_LANGUAGE, "en")): selector({
+                "select": {
+                    "options": list(LANGUAGES.keys()),
+                    "mode": "dropdown",
+                    "sort": True,
                 }
             }),
             vol.Optional(
@@ -649,21 +665,32 @@ class OpenAITTSOptionsFlow(OptionsFlow):
         
         # If this is a profile or legacy entry, include voice, model, and speed options
         if is_profile or is_legacy:
+            # schema_dict[vol.Optional(
+            #     "model",
+            #     default=self._config_entry.options.get(CONF_MODEL, self._config_entry.data.get(CONF_MODEL, "tts-1")),
+            # )] = selector({
+            #     "select": {
+            #         "options": MODELS,
+            #         "mode": "dropdown",
+            #         "sort": True,
+            #         "custom_value": True,
+            #     }
+            # })
+            
             schema_dict[vol.Optional(
-                "model",
-                default=self._config_entry.options.get(CONF_MODEL, self._config_entry.data.get(CONF_MODEL, "tts-1")),
+                "default_language",
+                default=self._config_entry.options.get(CONF_DEFAULT_LANGUAGE, self._config_entry.data.get(CONF_DEFAULT_LANGUAGE, "en")),
             )] = selector({
                 "select": {
-                    "options": MODELS,
+                    "options": list(LANGUAGES.keys()),
                     "mode": "dropdown",
                     "sort": True,
-                    "custom_value": True,
                 }
             })
             
             schema_dict[vol.Optional(
                 "voice",
-                default=self._config_entry.options.get(CONF_VOICE, self._config_entry.data.get(CONF_VOICE, "shimmer")),
+                default=self._config_entry.options.get(CONF_VOICE, self._config_entry.data.get(CONF_VOICE, "af_alloy")),
             )] = selector({
                 "select": {
                     "options": VOICES,
