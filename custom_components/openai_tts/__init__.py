@@ -22,6 +22,7 @@ from .const import (
     CONF_VOICE, 
     CONF_SPEED, 
     VOICES,
+    CONF_DEFAULT_LANGUAGE,
     CONF_CHIME_ENABLE,
     CONF_CHIME_SOUND,
     CONF_NORMALIZE_AUDIO,
@@ -188,11 +189,12 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
             hass.data[DOMAIN][f"{config_entry.entry_id}_migrating"] = True
             
             # Extract voice configuration from the entry
-            model = config_entry.data.get(CONF_MODEL, "tts-1")
-            voice = config_entry.data.get(CONF_VOICE, "shimmer")
+            model = config_entry.data.get(CONF_MODEL, "kokoro")
+            voice = config_entry.data.get(CONF_VOICE, "af_alloy")
             speed = config_entry.data.get(CONF_SPEED, 1.0)
             
             # Get options that should move to subentry
+            default_language = config_entry.options.get(CONF_DEFAULT_LANGUAGE, config_entry.data.get(CONF_DEFAULT_LANGUAGE))
             chime = config_entry.options.get(CONF_CHIME_ENABLE, config_entry.data.get(CONF_CHIME_ENABLE, False))
             chime_sound = config_entry.options.get(CONF_CHIME_SOUND, config_entry.data.get(CONF_CHIME_SOUND, "threetone.mp3"))
             normalize = config_entry.options.get(CONF_NORMALIZE_AUDIO, config_entry.data.get(CONF_NORMALIZE_AUDIO, False))
@@ -230,6 +232,8 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
             }
             if instructions:
                 subentry_data[CONF_INSTRUCTIONS] = instructions
+            if default_language:
+                subentry_data[CONF_DEFAULT_LANGUAGE] = default_language
             
             # Create the subentry first
             from types import MappingProxyType
@@ -253,7 +257,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
                 config_entry, 
                 data=parent_data,
                 options={},  # Clear options as they've moved to subentry
-                title=f"OpenAI TTS ({hostname})",
+                title=f"Fastkoko TTS ({hostname})",
                 minor_version=1,
                 version=2
             )
@@ -491,6 +495,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             options = {
                 "voice": data.get("voice"),
                 "speed": data.get("speed"),
+                "default_language": data.get("default_language"),
                 "instructions": data.get("instructions"),
                 "chime": chime_value,
                 "chime_sound": chime_sound_value,

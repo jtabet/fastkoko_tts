@@ -32,6 +32,8 @@ from .const import (
     CONF_URL,
     DEFAULT_URL,
     DOMAIN,
+    CONF_DEFAULT_LANGUAGE,
+    LANGUAGES,
     MODELS,
     VOICES,
     UNIQUE_ID,
@@ -150,8 +152,8 @@ class OpenAITTSConfigFlow(ConfigFlow, domain=DOMAIN):
     MINOR_VERSION = 1  # Increment for subentry flow support
     
     data_schema = vol.Schema({
-        vol.Optional(CONF_API_KEY, default=""): str,
-        vol.Optional(CONF_URL, default=DEFAULT_URL): str,
+        # vol.Required(CONF_API_KEY): str,
+        vol.Optional(CONF_URL, default="http://kokoro-tts:8880/v1/audio/speech"): str,
     })
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
@@ -159,44 +161,46 @@ class OpenAITTSConfigFlow(ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
         if user_input is not None:
             try:
-                await validate_user_input(user_input)
+                # await validate_user_input(user_input)
 
-                api_key = user_input.get(CONF_API_KEY, "")
-                api_url = user_input.get(CONF_URL, DEFAULT_URL)
-                is_custom_endpoint = api_url != DEFAULT_URL
+                api_key = ""
+                api_url = user_input.get(CONF_URL, "http://kokoro-tts:8880/v1/audio/speech")
+                # is_custom_endpoint = api_url != DEFAULT_URL
 
                 # Check for duplicate API key (only if API key is provided)
-                if api_key:
-                    for entry in self._async_current_entries():
-                        if entry.data.get(CONF_API_KEY) == api_key:
-                            _LOGGER.error("An entry with this API key already exists: %s", entry.title)
-                            errors["base"] = "duplicate_api_key"
-                            return self.async_show_form(
-                                step_id="user",
-                                data_schema=self.data_schema,
-                                errors=errors,
-                            )
+                # if api_key:
+                #     for entry in self._async_current_entries():
+                #         if entry.data.get(CONF_API_KEY) == api_key:
+                #             _LOGGER.error("An entry with this API key already exists: %s", entry.title)
+                #             errors["base"] = "duplicate_api_key"
+                #             return self.async_show_form(
+                #                 step_id="user",
+                #                 data_schema=self.data_schema,
+                #                 errors=errors,
+                #             )
 
                 # Validate API key by making a test request (only for default OpenAI endpoint)
-                if api_key and not is_custom_endpoint:
-                    await async_validate_api_key(api_key, api_url)
+                # if api_key and not is_custom_endpoint:
+                #     await async_validate_api_key(api_key, api_url)
 
                 # Generate unique ID
                 import hashlib
-                if api_key:
-                    # Use API key hash for unique ID
-                    api_key_hash = hashlib.sha256(api_key.encode()).hexdigest()[:16]
-                    unique_id = f"openai_tts_{api_key_hash}"
-                else:
-                    # Use URL hash for custom endpoints without API key
-                    url_hash = hashlib.sha256(api_url.encode()).hexdigest()[:16]
-                    unique_id = f"openai_tts_{url_hash}"
+                # if api_key:
+                #     # Use API key hash for unique ID
+                #     api_key_hash = hashlib.sha256(api_key.encode()).hexdigest()[:16]
+                #     unique_id = f"openai_tts_{api_key_hash}"
+                # else:
+                #     # Use URL hash for custom endpoints without API key
+                #     url_hash = hashlib.sha256(api_url.encode()).hexdigest()[:16]
+                #     unique_id = f"openai_tts_{url_hash}"
 
+                api_key_hash = hashlib.sha256(generate_entry_id().encode("utf-8")).hexdigest()[:16]
+                unique_id = f"fastkoko_tts_{api_key_hash}"
                 user_input[UNIQUE_ID] = unique_id
                 await self.async_set_unique_id(unique_id)
                 hostname = urlparse(user_input[CONF_URL]).hostname
                 return self.async_create_entry(
-                    title=f"OpenAI TTS ({hostname})",
+                    title=f"Fastkoko TTS ({hostname})",
                     data=user_input,
                 )
             except data_entry_flow.AbortFlow:
@@ -274,11 +278,11 @@ class OpenAITTSConfigFlow(ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             try:
-                api_key = user_input.get(CONF_API_KEY)
-                api_url = self._reauth_entry.data.get(CONF_URL, "https://api.openai.com/v1/audio/speech")
+                api_key = ""
+                api_url = self._reauth_entry.data.get(CONF_URL, "http://kokoro-tts:8880/v1/audio/speech")
 
                 # Validate the new API key
-                await async_validate_api_key(api_key, api_url)
+                # await async_validate_api_key(api_key, api_url)
 
                 # Update the entry with new credentials
                 self.hass.config_entries.async_update_entry(
@@ -299,7 +303,7 @@ class OpenAITTSConfigFlow(ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="reauth_confirm",
             data_schema=vol.Schema({
-                vol.Required(CONF_API_KEY): str,
+                # vol.Required(CONF_API_KEY): str,
             }),
             errors=errors,
             description_placeholders={
@@ -322,15 +326,15 @@ class OpenAITTSConfigFlow(ConfigFlow, domain=DOMAIN):
         
         if user_input is not None:
             try:
-                await validate_user_input(user_input)
+                # await validate_user_input(user_input)
                 
                 # Check for duplicate API key (exclude current entry)
-                api_key = user_input.get(CONF_API_KEY)
-                for entry in self._async_current_entries():
-                    if entry.entry_id != reconfigure_entry.entry_id and entry.data.get(CONF_API_KEY) == api_key:
-                        _LOGGER.error("An entry with this API key already exists: %s", entry.title)
-                        errors["base"] = "duplicate_api_key"
-                        break
+                api_key = ""
+                # for entry in self._async_current_entries():
+                #     if entry.entry_id != reconfigure_entry.entry_id and entry.data.get(CONF_API_KEY) == api_key:
+                #         _LOGGER.error("An entry with this API key already exists: %s", entry.title)
+                #         errors["base"] = "duplicate_api_key"
+                #         break
                 
                 if not errors:
                     # Update the entry using the recommended helper
@@ -360,8 +364,8 @@ class OpenAITTSConfigFlow(ConfigFlow, domain=DOMAIN):
         # Show the form with current values as defaults
         current_data = reconfigure_entry.data
         schema = vol.Schema({
-            vol.Required(CONF_API_KEY, default=current_data.get(CONF_API_KEY, "")): str,
-            vol.Optional(CONF_URL, default=current_data.get(CONF_URL, "https://api.openai.com/v1/audio/speech")): str,
+            # vol.Required(CONF_API_KEY, default=current_data.get(CONF_API_KEY, "")): str,
+            vol.Optional(CONF_URL, default=current_data.get(CONF_URL, "http://kokoro-tts:8880/v1/audio/speech")): str,
         })
         
         return self.async_show_form(
@@ -414,12 +418,18 @@ class OpenAITTSProfileSubentryFlow(ConfigSubentryFlow):
                     "chime_sound": CONF_CHIME_SOUND,
                     "normalize_audio": CONF_NORMALIZE_AUDIO,
                     "instructions": CONF_INSTRUCTIONS,
+                    "default_language": CONF_DEFAULT_LANGUAGE,
                 }
                 
                 for key, value in user_input.items():
                     mapped_key = key_mapping.get(key, key)
                     # Handle empty instructions - convert to None
                     if key == "instructions" and value == "":
+                        mapped_input[mapped_key] = None
+                    else:
+                        mapped_input[mapped_key] = value
+                    # Handle empty default_language - convert to None
+                    if key == "default_language" and value == "":
                         mapped_input[mapped_key] = None
                     else:
                         mapped_input[mapped_key] = value
@@ -450,20 +460,27 @@ class OpenAITTSProfileSubentryFlow(ConfigSubentryFlow):
         # Schema for profile creation
         profile_schema = vol.Schema({
             vol.Required(CONF_PROFILE_NAME): str,
-            vol.Required(CONF_MODEL, default="tts-1"): selector({
-                "select": {
-                    "options": MODELS,
-                    "mode": "dropdown",
-                    "sort": True,
-                    "custom_value": True,
-                }
-            }),
-            vol.Required(CONF_VOICE, default="shimmer"): selector({
+            # vol.Required(CONF_MODEL, default="tts-1"): selector({
+            #     "select": {
+            #         "options": MODELS,
+            #         "mode": "dropdown",
+            #         "sort": True,
+            #         "custom_value": True,
+            #     }
+            # }),
+            vol.Required(CONF_VOICE, default="af_alloy"): selector({
                 "select": {
                     "options": VOICES,
                     "mode": "dropdown",
                     "sort": True,
                     "custom_value": True,
+                }
+            }),
+            vol.Optional(CONF_DEFAULT_LANGUAGE): selector({
+                "select": {
+                    "options": list(LANGUAGES.keys()),
+                    "mode": "dropdown",
+                    "sort": True,
                 }
             }),
             vol.Optional(
@@ -514,6 +531,7 @@ class OpenAITTSProfileSubentryFlow(ConfigSubentryFlow):
                     "chime_sound": CONF_CHIME_SOUND,
                     "normalize_audio": CONF_NORMALIZE_AUDIO,
                     "instructions": CONF_INSTRUCTIONS,
+                    "default_language": CONF_DEFAULT_LANGUAGE,
                 }
                 
                 mapped_input = {}
@@ -521,6 +539,11 @@ class OpenAITTSProfileSubentryFlow(ConfigSubentryFlow):
                     mapped_key = key_mapping.get(key, key)
                     # Handle empty instructions - convert to None
                     if key == "instructions" and value == "":
+                        mapped_input[mapped_key] = None
+                    else:
+                        mapped_input[mapped_key] = value
+                    # Handle empty default_language - convert to None
+                    if key == "default_language" and value == "":
                         mapped_input[mapped_key] = None
                     else:
                         mapped_input[mapped_key] = value
@@ -550,20 +573,27 @@ class OpenAITTSProfileSubentryFlow(ConfigSubentryFlow):
         
         # Schema for profile reconfiguration (without profile name)
         reconfigure_schema = vol.Schema({
-            vol.Required(CONF_MODEL, default=existing_data.get(CONF_MODEL, "tts-1")): selector({
-                "select": {
-                    "options": MODELS,
-                    "mode": "dropdown",
-                    "sort": True,
-                    "custom_value": True,
-                }
-            }),
-            vol.Required(CONF_VOICE, default=existing_data.get(CONF_VOICE, "shimmer")): selector({
+            # vol.Required(CONF_MODEL, default=existing_data.get(CONF_MODEL, "tts-1")): selector({
+            #     "select": {
+            #         "options": MODELS,
+            #         "mode": "dropdown",
+            #         "sort": True,
+            #         "custom_value": True,
+            #     }
+            # }),
+            vol.Required(CONF_VOICE, default=existing_data.get(CONF_VOICE, "af_alloy")): selector({
                 "select": {
                     "options": VOICES,
                     "mode": "dropdown",
                     "sort": True,
                     "custom_value": True,
+                }
+            }),
+            vol.Optional(CONF_DEFAULT_LANGUAGE, default=existing_data.get(CONF_DEFAULT_LANGUAGE, "en")): selector({
+                "select": {
+                    "options": list(LANGUAGES.keys()),
+                    "mode": "dropdown",
+                    "sort": True,
                 }
             }),
             vol.Optional(
@@ -611,13 +641,13 @@ class OpenAITTSOptionsFlow(OptionsFlow):
         _LOGGER.debug("OptionsFlow init - is_profile: %s, is_legacy: %s, entry_id: %s", 
                      is_profile, is_legacy, self._config_entry.entry_id)
         _LOGGER.debug("Current options: %s", self._config_entry.options)
-        _LOGGER.debug("Current data: %s", {k: v for k, v in self._config_entry.data.items() if k != CONF_API_KEY})
+        # _LOGGER.debug("Current data: %s", {k: v for k, v in self._config_entry.data.items() if k != CONF_API_KEY})
         
         if user_input is not None:
             # Map string keys to constants
             key_mapping = {
-                "model": CONF_MODEL,
                 "voice": CONF_VOICE,
+                "default_language": CONF_DEFAULT_LANGUAGE,
                 "speed": CONF_SPEED,
                 "instructions": CONF_INSTRUCTIONS,
                 "chime": CONF_CHIME_ENABLE,
@@ -641,6 +671,15 @@ class OpenAITTSOptionsFlow(OptionsFlow):
                     else:
                         processed_data[mapped_key] = value.strip() if isinstance(value, str) else value
                         _LOGGER.debug("Setting instructions to: %s", processed_data[mapped_key])
+                # Convert empty strings to None for default_language field
+                elif key == "default_language":
+                    # If default_language is empty or contains only whitespace, set to None
+                    if value is None or (isinstance(value, str) and value.strip() == ""):
+                        processed_data[mapped_key] = None
+                        _LOGGER.debug("Setting default_language to None (empty/whitespace value)")
+                    else:
+                        processed_data[mapped_key] = value.strip() if isinstance(value, str) else value
+                        _LOGGER.debug("Setting default_language to: %s", processed_data[mapped_key])
                 else:
                     processed_data[mapped_key] = value
             
@@ -663,21 +702,32 @@ class OpenAITTSOptionsFlow(OptionsFlow):
         
         # If this is a profile or legacy entry, include voice, model, and speed options
         if is_profile or is_legacy:
+            # schema_dict[vol.Optional(
+            #     "model",
+            #     default=self._config_entry.options.get(CONF_MODEL, self._config_entry.data.get(CONF_MODEL, "tts-1")),
+            # )] = selector({
+            #     "select": {
+            #         "options": MODELS,
+            #         "mode": "dropdown",
+            #         "sort": True,
+            #         "custom_value": True,
+            #     }
+            # })
+            
             schema_dict[vol.Optional(
-                "model",
-                default=self._config_entry.options.get(CONF_MODEL, self._config_entry.data.get(CONF_MODEL, "tts-1")),
+                "default_language",
+                default=self._config_entry.options.get(CONF_DEFAULT_LANGUAGE, self._config_entry.data.get(CONF_DEFAULT_LANGUAGE, "en")),
             )] = selector({
                 "select": {
-                    "options": MODELS,
+                    "options": list(LANGUAGES.keys()),
                     "mode": "dropdown",
                     "sort": True,
-                    "custom_value": True,
                 }
             })
             
             schema_dict[vol.Optional(
                 "voice",
-                default=self._config_entry.options.get(CONF_VOICE, self._config_entry.data.get(CONF_VOICE, "shimmer")),
+                default=self._config_entry.options.get(CONF_VOICE, self._config_entry.data.get(CONF_VOICE, "af_alloy")),
             )] = selector({
                 "select": {
                     "options": VOICES,

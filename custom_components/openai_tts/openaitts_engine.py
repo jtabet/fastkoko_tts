@@ -14,6 +14,8 @@ import aiohttp
 
 from homeassistant.exceptions import HomeAssistantError
 
+from .const import LANGUAGES
+
 _LOGGER = logging.getLogger(__name__)
 
 # Chunk size for streaming (in bytes)
@@ -64,7 +66,8 @@ class OpenAITTSEngine:
         model: str | None = None,
         instructions: str | None = None,
         stream: bool = False,
-        on_first_chunk: Optional[Callable[[], None]] = None
+        on_first_chunk: Optional[Callable[[], None]] = None,
+        language: str | None = None
     ) -> Union[AudioResponse, StreamingAudioResponse]:
         """TTS request with optional streaming support.
         
@@ -100,7 +103,11 @@ class OpenAITTSEngine:
         # Include instructions if provided
         if instructions is not None:
             payload["instructions"] = instructions
-        
+    
+        # Include language if provided
+        if language is not None:
+            payload["lang_code"] = LANGUAGES[language]
+
         # Debug logging for payload
         _LOGGER.debug("TTS API payload: model=%s, voice=%s, speed=%s, instructions=%s", 
                      model, voice, speed, instructions)
@@ -153,7 +160,8 @@ class OpenAITTSEngine:
         speed: float | None = None,
         voice: str | None = None,
         model: str | None = None,
-        instructions: str | None = None
+        instructions: str | None = None,
+        language: str | None = None
     ) -> AsyncGenerator[bytes, None]:
         """Stream TTS audio from OpenAI API.
 
@@ -193,6 +201,10 @@ class OpenAITTSEngine:
         # Include instructions if provided
         if instructions is not None:
             payload["instructions"] = instructions
+
+        # Include language if provided
+        if language is not None:
+            payload["lang_code"] = LANGUAGES[language]
 
         _LOGGER.debug("Streaming TTS API request: model=%s, voice=%s, speed=%s, format=%s",
                      model, voice, speed, response_format)
@@ -280,9 +292,4 @@ class OpenAITTSEngine:
 
     @staticmethod
     def get_supported_langs() -> list[str]:
-        return [
-            "af","ar","hy","az","be","bs","bg","ca","zh","hr","cs","da","nl","en",
-            "et","fi","fr","gl","de","el","he","hi","hu","is","id","it","ja","kn",
-            "kk","ko","lv","lt","mk","ms","mr","mi","ne","no","fa","pl","pt","ro",
-            "ru","sr","sk","sl","es","sw","sv","tl","ta","th","tr","uk","ur","vi","cy"
-        ]
+        return list(LANGUAGES.keys())

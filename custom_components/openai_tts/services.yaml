@@ -10,11 +10,11 @@ say:
       name: TTS Entity
       description: The TTS entity to use for text-to-speech.
       required: true
-      example: "tts.openai_tts_tts_1"
+      example: "tts.fastkoko_tts_tts_1"
       selector:
         entity:
           domain: tts
-          integration: openai_tts
+          integration: fastkoko_tts
     message:
       name: Message
       description: The text to be spoken.
@@ -31,26 +31,140 @@ say:
       selector:
         select:
           options:
-            - label: Alloy (Neutral)
-              value: alloy
-            - label: Ash (Calm)
-              value: ash
-            - label: Ballad (Warm)
-              value: ballad
-            - label: Coral (Friendly)
-              value: coral
-            - label: Echo (Smooth)
-              value: echo
-            - label: Fable (Expressive)
-              value: fable
-            - label: Onyx (Authoritative)
-              value: onyx
-            - label: Nova (Energetic)
-              value: nova
-            - label: Sage (Thoughtful)
-              value: sage
-            - label: Shimmer (Gentle)
-              value: shimmer
+            - label: Alloy
+              value: af_alloy
+            - label: Aoede
+              value: af_aoede
+            - label: Bella
+              value: af_bella
+            - label: Heart
+              value: af_heart
+            - label: Jadzia
+              value: af_jadzia
+            - label: Jessica
+              value: af_jessica
+            - label: Kore
+              value: af_kore
+            - label: Nicole
+              value: af_nicole
+            - label: Nova
+              value: af_nova
+            - label: River
+              value: af_river
+            - label: Sarah
+              value: af_sarah
+            - label: Sky
+              value: af_sky
+            - label: V0
+              value: af_v0
+            - label: V0bella
+              value: af_v0bella
+            - label: V0irulan
+              value: af_v0irulan
+            - label: V0nicole
+              value: af_v0nicole
+            - label: V0sarah
+              value: af_v0sarah
+            - label: V0sky
+              value: af_v0sky
+            - label: Adam
+              value: am_adam
+            - label: Echo
+              value: am_echo
+            - label: Eric
+              value: am_eric
+            - label: Fenrir
+              value: am_fenrir
+            - label: Liam
+              value: am_liam
+            - label: Michael
+              value: am_michael
+            - label: Onyx
+              value: am_onyx
+            - label: Puck
+              value: am_puck
+            - label: Santa
+              value: am_santa
+            - label: V0adam
+              value: am_v0adam
+            - label: V0gurney
+              value: am_v0gurney
+            - label: V0michael
+              value: am_v0michael
+            - label: Alice
+              value: bf_alice
+            - label: Emma
+              value: bf_emma
+            - label: Lily
+              value: bf_lily
+            - label: V0emma
+              value: bf_v0emma
+            - label: V0isabella
+              value: bf_v0isabella
+            - label: Daniel
+              value: bm_daniel
+            - label: Fable
+              value: bm_fable
+            - label: George
+              value: bm_george
+            - label: Lewis
+              value: bm_lewis
+            - label: V0george
+              value: bm_v0george
+            - label: V0lewis
+              value: bm_v0lewis
+            - label: Dora
+              value: ef_dora
+            - label: Alex
+              value: em_alex
+            - label: Santa
+              value: em_santa
+            - label: Siwis
+              value: ff_siwis
+            - label: Alpha
+              value: hf_alpha
+            - label: Beta
+              value: hf_beta
+            - label: Omega
+              value: hm_omega
+            - label: Psi
+              value: hm_psi
+            - label: Sara
+              value: if_sara
+            - label: Nicola
+              value: im_nicola
+            - label: Alpha
+              value: jf_alpha
+            - label: Gongitsune
+              value: jf_gongitsune
+            - label: Nezumi
+              value: jf_nezumi
+            - label: Tebukuro
+              value: jf_tebukuro
+            - label: Kumo
+              value: jm_kumo
+            - label: Dora
+              value: pf_dora
+            - label: Alex
+              value: pm_alex
+            - label: Santa
+              value: pm_santa
+            - label: Xiaobei
+              value: zf_xiaobei
+            - label: Xiaoni
+              value: zf_xiaoni
+            - label: Xiaoxiao
+              value: zf_xiaoxiao
+            - label: Xiaoyi
+              value: zf_xiaoyi
+            - label: Yunjian
+              value: zm_yunjian
+            - label: Yunxi
+              value: zm_yunxi
+            - label: Yunxia
+              value: zm_yunxia
+            - label: Yunyang
+              value: zm_yunyang
     speed:
       name: Speed
       description: Speed of the speech (0.25-4.0). 1.0 is normal speed.
