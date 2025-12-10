@@ -147,8 +147,8 @@ class OpenAITTSConfigFlow(ConfigFlow, domain=DOMAIN):
     MINOR_VERSION = 1  # Increment for subentry flow support
     
     data_schema = vol.Schema({
-        vol.Required(CONF_API_KEY): str,
-        vol.Optional(CONF_URL, default="https://api.openai.com/v1/audio/speech"): str,
+        # vol.Required(CONF_API_KEY): str,
+        vol.Optional(CONF_URL, default="http://kokoro-tts:8880/v1/audio/speech"): str,
     })
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
@@ -156,11 +156,11 @@ class OpenAITTSConfigFlow(ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
         if user_input is not None:
             try:
-                await validate_user_input(user_input)
+                # await validate_user_input(user_input)
 
                 # Check for duplicate API key
                 api_key = user_input.get(CONF_API_KEY)
-                api_url = user_input.get(CONF_URL, "https://api.openai.com/v1/audio/speech")
+                api_url = user_input.get(CONF_URL, "http://kokoro-tts:8880/v1/audio/speech")
 
                 for entry in self._async_current_entries():
                     if entry.data.get(CONF_API_KEY) == api_key:
@@ -263,7 +263,7 @@ class OpenAITTSConfigFlow(ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             try:
                 api_key = user_input.get(CONF_API_KEY)
-                api_url = self._reauth_entry.data.get(CONF_URL, "https://api.openai.com/v1/audio/speech")
+                api_url = self._reauth_entry.data.get(CONF_URL, "http://kokoro-tts:8880/v1/audio/speech")
 
                 # Validate the new API key
                 await async_validate_api_key(api_key, api_url)
@@ -349,7 +349,7 @@ class OpenAITTSConfigFlow(ConfigFlow, domain=DOMAIN):
         current_data = reconfigure_entry.data
         schema = vol.Schema({
             vol.Required(CONF_API_KEY, default=current_data.get(CONF_API_KEY, "")): str,
-            vol.Optional(CONF_URL, default=current_data.get(CONF_URL, "https://api.openai.com/v1/audio/speech")): str,
+            vol.Optional(CONF_URL, default=current_data.get(CONF_URL, "http://kokoro-tts:8880/v1/audio/speech")): str,
         })
         
         return self.async_show_form(
