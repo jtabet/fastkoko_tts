@@ -10,7 +10,6 @@ import logging
 from urllib.parse import urlparse
 import uuid
 import aiohttp
-import random
 
 from homeassistant import data_entry_flow
 from homeassistant.config_entries import (
@@ -179,7 +178,7 @@ class OpenAITTSConfigFlow(ConfigFlow, domain=DOMAIN):
 
                 # Use API key as the unique identifier (hashed for privacy)
                 import hashlib
-                api_key_hash = hashlib.sha256(random.random()).hexdigest()[:16]
+                api_key_hash = hashlib.sha256(generate_entry_id()).encode("utf-8")).hexdigest()[:16]
                 unique_id = f"openai_tts_{api_key_hash}"
                 user_input[UNIQUE_ID] = unique_id
                 await self.async_set_unique_id(unique_id)
