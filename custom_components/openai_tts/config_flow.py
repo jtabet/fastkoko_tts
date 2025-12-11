@@ -402,12 +402,18 @@ class OpenAITTSProfileSubentryFlow(ConfigSubentryFlow):
                     "chime_sound": CONF_CHIME_SOUND,
                     "normalize_audio": CONF_NORMALIZE_AUDIO,
                     "instructions": CONF_INSTRUCTIONS,
+                    "default_language": CONF_DEFAULT_LANGUAGE,
                 }
                 
                 for key, value in user_input.items():
                     mapped_key = key_mapping.get(key, key)
                     # Handle empty instructions - convert to None
                     if key == "instructions" and value == "":
+                        mapped_input[mapped_key] = None
+                    else:
+                        mapped_input[mapped_key] = value
+                    # Handle empty default_language - convert to None
+                    if key == "default_language" and value == "":
                         mapped_input[mapped_key] = None
                     else:
                         mapped_input[mapped_key] = value
@@ -509,6 +515,7 @@ class OpenAITTSProfileSubentryFlow(ConfigSubentryFlow):
                     "chime_sound": CONF_CHIME_SOUND,
                     "normalize_audio": CONF_NORMALIZE_AUDIO,
                     "instructions": CONF_INSTRUCTIONS,
+                    "default_language": CONF_DEFAULT_LANGUAGE,
                 }
                 
                 mapped_input = {}
@@ -516,6 +523,11 @@ class OpenAITTSProfileSubentryFlow(ConfigSubentryFlow):
                     mapped_key = key_mapping.get(key, key)
                     # Handle empty instructions - convert to None
                     if key == "instructions" and value == "":
+                        mapped_input[mapped_key] = None
+                    else:
+                        mapped_input[mapped_key] = value
+                    # Handle empty default_language - convert to None
+                    if key == "default_language" and value == "":
                         mapped_input[mapped_key] = None
                     else:
                         mapped_input[mapped_key] = value
@@ -618,8 +630,8 @@ class OpenAITTSOptionsFlow(OptionsFlow):
         if user_input is not None:
             # Map string keys to constants
             key_mapping = {
-                "model": CONF_MODEL,
                 "voice": CONF_VOICE,
+                "default_language": CONF_DEFAULT_LANGUAGE,
                 "speed": CONF_SPEED,
                 "instructions": CONF_INSTRUCTIONS,
                 "chime": CONF_CHIME_ENABLE,
@@ -643,6 +655,15 @@ class OpenAITTSOptionsFlow(OptionsFlow):
                     else:
                         processed_data[mapped_key] = value.strip() if isinstance(value, str) else value
                         _LOGGER.debug("Setting instructions to: %s", processed_data[mapped_key])
+                # Convert empty strings to None for default_language field
+                elif key == "default_language":
+                    # If default_language is empty or contains only whitespace, set to None
+                    if value is None or (isinstance(value, str) and value.strip() == ""):
+                        processed_data[mapped_key] = None
+                        _LOGGER.debug("Setting default_language to None (empty/whitespace value)")
+                    else:
+                        processed_data[mapped_key] = value.strip() if isinstance(value, str) else value
+                        _LOGGER.debug("Setting default_language to: %s", processed_data[mapped_key])
                 else:
                     processed_data[mapped_key] = value
             

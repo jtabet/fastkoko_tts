@@ -3,13 +3,13 @@ Constants for Fastkoko TTS custom component
 """
 
 DOMAIN = "fastkoko_tts"
-CONF_API_KEY = ""
-CONF_DEFAULT_LANGUAGE = ""
-CONF_MODEL = "kokoro:82m"
+CONF_API_KEY = "api_key"
+CONF_DEFAULT_LANGUAGE = "default_language"
+CONF_MODEL = "model"
 CONF_VOICE = "voice"
 CONF_SPEED = "speed"
 CONF_URL = "url"
-DEFAULT_URL = "https://api.openai.com/v1/audio/speech"
+DEFAULT_URL = "https://kokoro-tts:8880/v1/audio/speech"
 UNIQUE_ID = "unique_id"
 
 LANGUAGES = {
