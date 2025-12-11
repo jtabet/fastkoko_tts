@@ -179,12 +179,12 @@ class OpenAITTSConfigFlow(ConfigFlow, domain=DOMAIN):
                 # Use API key as the unique identifier (hashed for privacy)
                 import hashlib
                 api_key_hash = hashlib.sha256(generate_entry_id().encode("utf-8")).hexdigest()[:16]
-                unique_id = f"openai_tts_{api_key_hash}"
+                unique_id = f"fastkoko_tts_{api_key_hash}"
                 user_input[UNIQUE_ID] = unique_id
                 await self.async_set_unique_id(unique_id)
                 hostname = urlparse(user_input[CONF_URL]).hostname
                 return self.async_create_entry(
-                    title=f"OpenAI TTS ({hostname})",
+                    title=f"Fastkoko TTS ({hostname})",
                     data=user_input,
                 )
             except data_entry_flow.AbortFlow:

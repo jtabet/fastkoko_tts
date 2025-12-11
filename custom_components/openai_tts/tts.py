@@ -155,7 +155,7 @@ def read_duration_from_audio(audio_data: bytes) -> int | None:
 
 # Storage version and key
 STORAGE_VERSION = 1
-STORAGE_KEY = "openai_tts_state"
+STORAGE_KEY = "fastkoko_tts_state"
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -219,7 +219,7 @@ async def async_setup_entry(
             url = config_entry.data.get(CONF_URL)
             
             # Get voice configuration from subentry
-            model = subentry.data.get(CONF_MODEL, "tts-1")
+            model = subentry.data.get(CONF_MODEL, "kokoro:82m")
             voice = subentry.data.get(CONF_VOICE, "shimmer")
             speed = subentry.data.get(CONF_SPEED, 1.0)
             
@@ -312,20 +312,20 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
             safe_profile_name = profile_name.lower().replace(" ", "_").replace("-", "_")
             # Remove any non-alphanumeric characters (except underscore)
             safe_profile_name = ''.join(c for c in safe_profile_name if c.isalnum() or c == '_')
-            self.entity_id = f"tts.openai_tts_{safe_profile_name}"
-            self._attr_name = f"OpenAI TTS {profile_name}"
+            self.entity_id = f"tts.fastkoko_tts_{safe_profile_name}"
+            self._attr_name = f"Fastkoko TTS {profile_name}"
         else:
             # This is the main entry or legacy entry
             # For legacy entries with model in data, use model in entity_id to make them unique
             if config.data.get(CONF_MODEL):
                 model_suffix = config.data.get(CONF_MODEL, "").replace("-", "_").replace(".", "_")
                 # Don't add unique suffix - keep entity_id stable for service calls
-                self.entity_id = f"tts.openai_tts_{model_suffix}"
-                self._attr_name = f"OpenAI TTS ({config.data.get(CONF_MODEL)})"
+                self.entity_id = f"tts.fastkoko_tts_{model_suffix}"
+                self._attr_name = f"Fastkoko TTS ({config.data.get(CONF_MODEL)})"
             else:
                 # New-style main entry
-                self.entity_id = "tts.openai_tts"
-                self._attr_name = "OpenAI TTS"
+                self.entity_id = "tts.fastkoko_tts"
+                self._attr_name = "Fastkoko TTS"
         
         # No custom cache needed - using HA's cache with embedded metadata
         
@@ -445,7 +445,7 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
 
     @property
     def supported_languages(self) -> list[str]:
-        return ["en"]
+        return list(LANGUAGES.keys())
 
     @property
     def supported_options(self) -> list[str]:
@@ -495,18 +495,18 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
             device_unique_id = self._config.data.get(UNIQUE_ID)
             if not device_unique_id:
                 # Fallback: generate based on profile name
-                device_unique_id = f"{self._config.data.get(CONF_PROFILE_NAME, 'profile')}_{self._config.data.get(CONF_MODEL, 'tts-1')}"
+                device_unique_id = f"{self._config.data.get(CONF_PROFILE_NAME, 'profile')}_{self._config.data.get(CONF_MODEL, 'kokoro:82m')}"
         else:
             device_unique_id = self._config.data.get(UNIQUE_ID)
         
         if not device_unique_id:
             # Fallback to URL-based unique ID
-            device_unique_id = self._config.data.get(CONF_URL, "openai_tts")
+            device_unique_id = self._config.data.get(CONF_URL, "fastkoko_tts")
         
         # Create device info
         device_info = {
             "identifiers": {(DOMAIN, device_unique_id)},
-            "manufacturer": "OpenAI",
+            "manufacturer": "hexgrad",
             "sw_version": "1.0",
         }
         
@@ -514,7 +514,7 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
         if is_subentry:
             # Get agent name (profile name), model, and voice
             agent_name = self._config.data.get(CONF_PROFILE_NAME, "default")
-            model = self._config.data.get(CONF_MODEL, "tts-1")
+            model = self._config.data.get(CONF_MODEL, "kokoro:82m")
             voice = self._config.data.get(CONF_VOICE, "unknown")
             # Format: "agentname (model-voice)"
             device_info["name"] = f"{agent_name} ({model}-{voice})"
