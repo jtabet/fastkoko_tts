@@ -1,4 +1,6 @@
-# OpenAI TTS Custom Component for Home Assistant
+# kokoro-fastapi TTS Custom Component for Home Assistant - adapted from sfortis/openai_tts
+
+(Upstream readme below)
 
 The OpenAI TTS component for Home Assistant makes it possible to use the OpenAI API to generate spoken audio from text. This can be used in automations, assistants, scripts, or any other component that supports TTS within Home Assistant. 
 
